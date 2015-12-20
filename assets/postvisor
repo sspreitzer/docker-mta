@@ -16,7 +16,7 @@ postconf mynetworks=${POSTFIX_MYNETWORKS} \
          smtpd_sasl_auth_enable=yes \
          smtp_tls_security_level=may \
          smtpd_tls_cert_file=/etc/postfix/tls.crt \
-         smptd_tls_key_file=/etc/postfix/tls.key \
+         smtpd_tls_key_file=/etc/postfix/tls.key \
          smtpd_tls_security_level=may
 
 openssl req -x509 -subj "/CN=${POSTFIX_MYHOSTNAME}" -newkey rsa:2048 -nodes -keyout /etc/postfix/tls.key -out /etc/postfix/tls.crt -days 3650
