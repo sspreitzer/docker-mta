@@ -2,6 +2,8 @@
 
 trap "{ echo Stopping postfix; postfix stop; exit 0; }" EXIT
 
+openssl req -x509 -subj "/CN=${POSTFIX_MYHOSTNAME}" -newkey rsa:2048 -nodes -keyout /etc/postfix/tls.key -out /etc/postfix/tls.crt -days 3650
+
 sed -i 's|^#submission|submission|g' /etc/postfix/master.cf
 
 for i in /etc/aliases /etc/postfix/{access,canonical,generic,relocated,transport,virtual}; do

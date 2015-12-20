@@ -1,7 +1,7 @@
 FROM centos:7
 
 RUN yum install -y epel-release && \
-  yum install -y supervisor postfix dovecot dovecot-pigeonhole && \
+  yum install -y supervisor openssl postfix dovecot dovecot-pigeonhole && \
   yum clean all
 
 ADD assets/mta.ini /etc/supervisord.conf
