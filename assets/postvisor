@@ -1,0 +1,10 @@
+#!/bin/bash
+
+trap "{ echo Stopping postfix; postfix stop; exit 0; }" EXIT
+
+for i in /etc/aliases /etc/postfix/{access,canonical,generic,relocated,transport,virtual}; do
+  postmap $i
+done
+
+postfix start
+sleep infinity  
