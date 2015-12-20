@@ -2,11 +2,28 @@
 
 trap "{ echo Stopping postfix; postfix stop; exit 0; }" EXIT
 
-openssl req -x509 -subj "/CN=${POSTFIX_MYHOSTNAME}" -newkey rsa:2048 -nodes -keyout /etc/postfix/tls.key -out /etc/postfix/tls.crt -days 3650
 
 sed -i 's|^#submission|submission|g' /etc/postfix/master.cf
 
-for i in /etc/aliases /etc/postfix/{access,canonical,generic,relocated,transport,virtual}; do
+postconf mynetworks=${POSTFIX_MYNETWORKS} \
+         myhostname=${POSTFIX_MYHOSTNAME} \
+         mydomain=${POSTFIX_MYDOMAIN} \
+         mydestination=${POSTFIX_MYDESTINATION} \
+         inet_interfaces=all \
+         inet_protocols=all \
+         smtpd_sasl_type=dovecot \
+         smtpd_sasl_path=private/auth \
+         smtpd_sasl_auth_enable=yes \
+         smtp_tls_security_level=may \
+         smtpd_tls_cert_file=/etc/postfix/tls.crt \
+         smptd_tls_key_file=/etc/postfix/tls.key \
+         smtpd_tls_security_level=may
+
+openssl req -x509 -subj "/CN=${POSTFIX_MYHOSTNAME}" -newkey rsa:2048 -nodes -keyout /etc/postfix/tls.key -out /etc/postfix/tls.crt -days 3650
+
+postalias /etc/aliases
+
+for i in /etc/postfix/{access,canonical,generic,relocated,transport,virtual}; do
   postmap $i
 done
 
