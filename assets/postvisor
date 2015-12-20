@@ -6,11 +6,8 @@ trap "{ echo Stopping postfix; postfix stop; exit 0; }" EXIT
 sed -i 's|^#submission|submission|g' /etc/postfix/master.cf
 
 postconf mynetworks=${POSTFIX_MYNETWORKS} \
-         myhostname=${POSTFIX_MYHOSTNAME} \
-         mydomain=${POSTFIX_MYDOMAIN} \
-         mydestination=${POSTFIX_MYDESTINATION} \
+         mydestination=\$myhostname,localhost,${POSTFIX_DOMAINS} \
          inet_interfaces=all \
-         inet_protocols=all \
          smtpd_sasl_type=dovecot \
          smtpd_sasl_path=private/auth \
          smtpd_sasl_auth_enable=yes \
