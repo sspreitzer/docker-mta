@@ -2,6 +2,8 @@
 
 trap "{ echo Stopping postfix; postfix stop; exit 0; }" EXIT
 
+sed -i 's|^#submission|submission|g' /etc/postfix/master.cf
+
 for i in /etc/aliases /etc/postfix/{access,canonical,generic,relocated,transport,virtual}; do
   postmap $i
 done
