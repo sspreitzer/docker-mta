@@ -5,8 +5,8 @@ trap "{ echo Stopping postfix; postfix stop; exit 0; }" EXIT
 
 sed -i 's|^#submission|submission|g' /etc/postfix/master.cf
 
-postconf mynetworks=${POSTFIX_MYNETWORKS} \
-         mydestination=\$myhostname,localhost,${POSTFIX_DOMAINS} \
+postconf mynetworks="${POSTFIX_MYNETWORKS}" \
+         mydestination="\$myhostname,localhost,${POSTFIX_DOMAINS}" \
          inet_interfaces=all \
          smtpd_sasl_type=dovecot \
          smtpd_sasl_path=private/auth \
@@ -15,6 +15,12 @@ postconf mynetworks=${POSTFIX_MYNETWORKS} \
          smtpd_tls_cert_file=/etc/postfix/tls.crt \
          smtpd_tls_key_file=/etc/postfix/tls.key \
          smtpd_tls_security_level=may
+
+if [ "${POSTFIX_SPAMPROTECT}" == "true" ]; then
+  postconf smtpd_client_restrictions="reject_rbl_client zen.spamhaus.org,reject_rhsbl_reverse_client dbl.spamhaus.org" \
+    smptd_helo_restrictions="reject_rhsbl_helo dbl.spamhaus.org" \
+    smtpd_sender_restrictions="permit_mynetworks,permit_sasl_authenticated,defer_unauth_destination,reject_rhsbl_sender dbl.spamhaus.org"
+fi
 
 openssl req -x509 -subj "/CN=$(hostname -f)" -newkey rsa:2048 -nodes -keyout /etc/postfix/tls.key -out /etc/postfix/tls.crt -days 3650
 
