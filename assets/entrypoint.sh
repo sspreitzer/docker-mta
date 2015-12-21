@@ -10,12 +10,13 @@ bye() {
 
 trap bye EXIT SIGINT
 
-
+# Postfix prepare
 sed -i 's|^#submission|submission|g' /etc/postfix/master.cf
 
 postconf mynetworks="${POSTFIX_MYNETWORKS}" \
          mydestination="\$myhostname,localhost,${POSTFIX_DOMAINS}" \
          inet_interfaces=all \
+         inet_protocols=ipv4 \
          smtpd_sasl_type=dovecot \
          smtpd_sasl_path=private/auth \
          smtpd_sasl_auth_enable=yes \
@@ -38,15 +39,18 @@ for i in /etc/postfix/{access,canonical,generic,relocated,transport,virtual}; do
   postmap $i
 done
 
+# Create users
 for userpass in $(echo ${EMAIL_USERS}|tr ',' ' '); do
   username=$(echo ${userpass}|awk -F: '{ print $1; }')
   useradd -m ${username}
   echo ${userpass} | chpasswd
 done
 
+# Change syslog to local logging aka no motherflippin' systemd
 rm -f /etc/rsyslog.d/listen.conf
 sed -i 's|^$OmitLocalLogging|#$OmitLocalLogging|g' /etc/rsyslog.conf
 
+# Usual run things
 if [ "$@" == "mta" ]; then
   rsyslogd; sleep 1
   postfix start
