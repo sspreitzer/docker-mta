@@ -1,6 +1,16 @@
 FROM centos:7
 
-RUN yum install -y rsyslog openssl postfix dovecot dovecot-pigeonhole && \
+RUN yum install -y rsyslog \
+    openssl \
+    postfix \
+    dovecot \
+    dovecot-pigeonhole \
+    cyrus-sasl-gssapi \
+    cyrus-sasl-ldap \
+    cyrus-sasl-md5 \
+    cyrus-sasl-plain \
+    cyrus-sasl-scram \
+    cyrus-sasl-sql && \
   yum clean all
 
 ADD assets/entrypoint.sh /usr/local/sbin/entrypoint.sh
