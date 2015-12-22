@@ -13,6 +13,7 @@ VOLUME /var/spool/mail
 ENV POSTFIX_MYNETWORKS=127.0.0.0/8,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12 \
   POSTFIX_DOMAINS=example.com,mail.example.com \
   POSTFIX_SPAMPROTECT=true \
+  POSTFIX_EXTRACONF=/etc/postfix/extra.cf \
   EMAIL_USERS=example:password,example2:password
 
 ENTRYPOINT ["entrypoint.sh"]

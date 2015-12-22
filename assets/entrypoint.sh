@@ -31,6 +31,12 @@ if [ "${POSTFIX_SPAMPROTECT}" == "true" ]; then
     smtpd_sender_restrictions="permit_mynetworks,permit_sasl_authenticated,defer_unauth_destination,reject_rhsbl_sender dbl.spamhaus.org"
 fi
 
+if [ -f "${POSTFIX_EXTRACONF}" ]; then
+  for line in $(cat ${POSTFIX_EXTRACONF}); do
+    postconf ${line}
+  done
+fi
+
 openssl req -x509 -subj "/CN=$(hostname -f)" -newkey rsa:2048 -nodes -keyout /etc/postfix/tls.key -out /etc/postfix/tls.crt -days 3650
 
 postalias /etc/aliases
