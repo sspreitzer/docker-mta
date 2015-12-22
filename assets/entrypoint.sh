@@ -23,7 +23,8 @@ postconf mynetworks="${POSTFIX_MYNETWORKS}" \
          smtp_tls_security_level=may \
          smtpd_tls_cert_file=/etc/postfix/tls.crt \
          smtpd_tls_key_file=/etc/postfix/tls.key \
-         smtpd_tls_security_level=may
+         smtpd_tls_security_level=may \
+         smtpd_tls_auth_only=yes
 
 if [ "${POSTFIX_SPAMPROTECT}" == "true" ]; then
   postconf smtpd_client_restrictions="reject_rbl_client zen.spamhaus.org,reject_rhsbl_reverse_client dbl.spamhaus.org" \
