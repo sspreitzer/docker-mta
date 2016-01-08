@@ -11,6 +11,14 @@ bye() {
 trap bye EXIT SIGINT
 
 # Postfix prepare
+sed -i 's|^smtp |#smtp |g' /etc/postfix/master.cf
+
+cat >> /etc/postfix/master.cf << EOF
+smtp      inet  n       -       n       -       -       smtpd
+  -o smtpd_tls_security_level=none
+  -o smtpd_sasl_auth_enable=no
+EOF
+
 cat >> /etc/postfix/master.cf << EOF
 submission inet n       -       n       -       -       smtpd
   -o syslog_name=postfix/submission
@@ -69,6 +77,10 @@ postalias /etc/aliases
 for i in /etc/postfix/{access,canonical,generic,relocated,transport,virtual}; do
   postmap $i
 done
+
+# Dovecot
+ln -sf /etc/postfix/tls.crt /etc/pki/dovecot/certs/dovecot.pem
+ln -sf /etc/postfix/tls.key /etc/pki/dovecot/private/dovecot.pem
 
 # Create users
 for userpass in $(echo ${EMAIL_USERS}|tr ',' ' '); do
