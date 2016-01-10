@@ -15,34 +15,41 @@ sed -i 's|^smtp |#smtp |g' /etc/postfix/master.cf
 
 cat >> /etc/postfix/master.cf << EOF
 smtp      inet  n       -       n       -       -       smtpd
+  -o content_filter=spamassassin
   -o smtpd_tls_security_level=none
   -o smtpd_sasl_auth_enable=no
 EOF
 
 cat >> /etc/postfix/master.cf << EOF
 submission inet n       -       n       -       -       smtpd
+  -o content_filter=spamassassin
   -o syslog_name=postfix/submission
   -o smtpd_tls_security_level=encrypt
 #  -o smtpd_sasl_auth_enable=yes
 #  -o smtpd_reject_unlisted_recipient=no
-#  -o smtpd_client_restrictions=$mua_client_restrictions
-#  -o smtpd_helo_restrictions=$mua_helo_restrictions
-#  -o smtpd_sender_restrictions=$mua_sender_restrictions
+#  -o smtpd_client_restrictions=\$mua_client_restrictions
+#  -o smtpd_helo_restrictions=\$mua_helo_restrictions
+#  -o smtpd_sender_restrictions=\$mua_sender_restrictions
 #  -o smtpd_recipient_restrictions=permit_sasl_authenticated,reject
 #  -o milter_macro_daemon_name=ORIGINATING
 EOF
 
 cat >> /etc/postfix/master.cf << EOF
 smtps     inet  n       -       n       -       -       smtpd
+  -o content_filter=spamassassin
   -o syslog_name=postfix/smtps
   -o smtpd_tls_wrappermode=yes
   -o smtpd_sasl_auth_enable=yes
 #  -o smtpd_reject_unlisted_recipient=no
-#  -o smtpd_client_restrictions=$mua_client_restrictions
-#  -o smtpd_helo_restrictions=$mua_helo_restrictions
-#  -o smtpd_sender_restrictions=$mua_sender_restrictions
+#  -o smtpd_client_restrictions=\$mua_client_restrictions
+#  -o smtpd_helo_restrictions=\$mua_helo_restrictions
+#  -o smtpd_sender_restrictions=\$mua_sender_restrictions
 #  -o smtpd_recipient_restrictions=permit_sasl_authenticated,reject
 #  -o milter_macro_daemon_name=ORIGINATING
+EOF
+
+cat >> /etc/postfix/master.cf << EOF
+spamassassin unix - n n - - pipe flags=R user=spamd argv=/usr/bin/spamc -e /usr/sbin/sendmail -oi -f \${sender} \${recipient}
 EOF
 
 postconf mynetworks="${POSTFIX_MYNETWORKS}" \
@@ -83,6 +90,8 @@ ln -sf /etc/postfix/tls.crt /etc/pki/dovecot/certs/dovecot.pem
 ln -sf /etc/postfix/tls.key /etc/pki/dovecot/private/dovecot.pem
 
 # Create users
+useradd -s /bin/false spamd
+
 for userpass in $(echo ${EMAIL_USERS}|tr ',' ' '); do
   username=$(echo ${userpass}|awk -F: '{ print $1; }')
   useradd -m ${username}
@@ -95,10 +104,19 @@ sed -i 's|^$OmitLocalLogging|#$OmitLocalLogging|g' /etc/rsyslog.conf
 
 # Usual run things
 if [ "$@" == "mta" ]; then
+  echo "Starting rsyslogd.."
   rsyslogd; sleep 1
-  postfix start
+  echo "Updating spam patterns.."
+  sa-update
+  echo "Starting spam filter.."
+  spamd -d -c -m5 -H
+  echo "Starting imap.."
   dovecot
+  echo "Starting smtp.."
+  postfix start
+  echo "OK Running"
   tail -f /var/log/maillog
 else
+  echo "Starting ${@}"
   exec $@
 fi

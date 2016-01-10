@@ -5,6 +5,7 @@ RUN yum install -y rsyslog \
     postfix \
     dovecot \
     dovecot-pigeonhole \
+    spamassassin \
     cyrus-sasl-gssapi \
     cyrus-sasl-ldap \
     cyrus-sasl-md5 \
