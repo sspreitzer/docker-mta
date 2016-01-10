@@ -90,7 +90,7 @@ ln -sf /etc/postfix/tls.crt /etc/pki/dovecot/certs/dovecot.pem
 ln -sf /etc/postfix/tls.key /etc/pki/dovecot/private/dovecot.pem
 
 # Create users
-useradd -s /bin/false spamd
+useradd -r -s /bin/false spamd
 
 for userpass in $(echo ${EMAIL_USERS}|tr ',' ' '); do
   username=$(echo ${userpass}|awk -F: '{ print $1; }')
