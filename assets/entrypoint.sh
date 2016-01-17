@@ -14,6 +14,10 @@ trap bye EXIT SIGINT
 sed -i 's|^smtp |#smtp |g' /etc/postfix/master.cf
 
 cat >> /etc/postfix/master.cf << EOF
+smtp      unix  -       -       n       -       -       smtp
+EOF
+
+cat >> /etc/postfix/master.cf << EOF
 smtp      inet  n       -       n       -       -       smtpd
   -o content_filter=spamassassin
   -o smtpd_tls_security_level=none
